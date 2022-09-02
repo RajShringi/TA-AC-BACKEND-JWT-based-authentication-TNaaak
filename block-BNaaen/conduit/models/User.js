@@ -47,13 +47,12 @@ userSchema.methods.userJSON = function (token) {
   };
 };
 
-userSchema.methods.profileJSON = function (id) {
-  console.log(this);
+userSchema.methods.profileJSON = function (user) {
   return {
     username: this.username,
     bio: this.bio,
     image: this.image,
-    followings: this.followings.includes(id),
+    followings: user.followings.includes(this.id),
   };
 };
 
