@@ -21,7 +21,7 @@ router.post("/:username/follow", auth.verifyToken, async (req, res, next) => {
       $addToSet: { followings: user.id },
     });
     const currentUser = await User.findById(req.user.userId);
-    res.json({ profile: currentUser.profileJSON(user.id) });
+    res.json({ profile: user.profileJSON(currentUser) });
   } catch (err) {
     console.log(err);
     res.status(400).json(err);
@@ -39,7 +39,7 @@ router.delete(
         $pull: { followings: user.id },
       });
       const currentUser = await User.findById(req.user.userId);
-      res.json({ profile: currentUser.profileJSON(user.id) });
+      res.json({ profile: user.profileJSON(currentUser) });
     } catch (err) {
       res.status(400).json(err);
     }
