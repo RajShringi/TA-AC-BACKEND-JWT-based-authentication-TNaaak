@@ -93,12 +93,13 @@ router.post("/:slug/comments", auth.verifyToken, async (req, res, next) => {
   const slug = req.params.slug;
   try {
     req.body.comment.author = req.user.userId;
+    const user = await User.findById(req.user.userId);
     const comment = await Comment.create(req.body.comment);
     const article = await Article.findOneAndUpdate(
       { slug },
       { $push: { comments: comment.id } }
     );
-    res.json({ comment });
+    res.json({ comment: comment.commentJSON(user) });
   } catch (err) {
     res.status(400).json(err);
   }
@@ -107,10 +108,13 @@ router.post("/:slug/comments", auth.verifyToken, async (req, res, next) => {
 router.get("/:slug/comments", auth.verifyToken, async (req, res, next) => {
   const slug = req.params.slug;
   try {
-    const article = await Article.findOne({ slug });
-    const articleWithComments = await article.populate("comments");
-    res.json({ comments: articleWithComments.comments });
+    let article = await Article.findOne({ slug });
+    article = await article.populate("comments");
+    const user = await User.findById(req.user.userId);
+    const newComments = await getComments(article.comments, user);
+    res.json({ comments: newComments });
   } catch (err) {
+    console.log(err);
     res.status(400).json(err);
   }
 });
@@ -124,11 +128,12 @@ router.delete(
 
     try {
       const comment = await Comment.findByIdAndDelete(id);
+      const user = await User.findById(req.user.userId);
       const article = await Article.findOneAndUpdate(
         { slug },
         { $pull: { comments: comment.id } }
       );
-      res.json({ article });
+      res.json({ comment: comment.commentJSON(user) });
     } catch (err) {
       res.status(400).json(err);
     }
@@ -222,4 +227,17 @@ async function getArticles(articles, user = null) {
     responseFormatArticles.push(article.articleJSON(user));
   });
   return responseFormatArticles;
+}
+
+async function getComments(comments, user = null) {
+  const commentsPromises = [];
+  let responseFormatComments = [];
+  comments.forEach((comment) => {
+    commentsPromises.push(comment.populate("author"));
+  });
+  const newComments = await Promise.all(commentsPromises);
+  newComments.forEach((comment) =>
+    responseFormatComments.push(comment.commentJSON(user))
+  );
+  return responseFormatComments;
 }
