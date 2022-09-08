@@ -8,5 +8,13 @@ const commentSchema = new Schema(
   },
   { timestamps: true }
 );
-
+commentSchema.methods.commentJSON = function (user = null) {
+  return {
+    id: this.id,
+    createdAt: this.createdAt,
+    updatedAt: this.updatedAt,
+    body: this.body,
+    author: this.author.profileJSON(user),
+  };
+};
 module.exports = mongoose.model("Comment", commentSchema);
