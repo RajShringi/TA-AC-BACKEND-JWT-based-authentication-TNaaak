@@ -44,15 +44,17 @@ userSchema.methods.userJSON = function (token) {
     username: this.username,
     email: this.email,
     token: token,
+    bio: this.bio,
+    image: this.image,
   };
 };
 
-userSchema.methods.profileJSON = function (user) {
+userSchema.methods.profileJSON = function (user = null) {
   return {
     username: this.username,
     bio: this.bio,
     image: this.image,
-    followings: user.followings.includes(this.id),
+    followings: user ? user.followings.includes(this.id) : false,
   };
 };
 

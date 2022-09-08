@@ -7,6 +7,7 @@ router.get("/:username", async (req, res, next) => {
   const username = req.params.username;
   try {
     const user = await User.findOne({ username });
+    console.log(user, username);
     res.json({ profile: user.profileJSON() });
   } catch (err) {
     res.status(400).json(err);

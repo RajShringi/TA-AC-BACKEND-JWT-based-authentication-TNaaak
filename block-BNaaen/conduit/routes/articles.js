@@ -121,22 +121,22 @@ router.get("/", async (req, res, next) => {
   limit = limit ? limit : 20;
   offset = offset ? offset : 0;
   try {
-    let filter;
+    let filter = {};
     if (tag) {
-      filter = { tagList: tag };
+      filter.tagList = tag;
     }
     if (author) {
       const user = await User.findOne({ username: author });
-      filter = { author: user.id };
+      filter.author = user.id;
     }
     if (favorited) {
       const user = await User.findOne({ username: favorited });
-      filter = { favoritedBy: user.id };
+      filter.favoritedBy = user.id;
     }
     const articles = await Article.find(filter)
       .sort({ createdAt: -1 })
-      .limit(limit)
-      .skip(offset);
+      .skip(offset)
+      .limit(limit);
     res.json({ articles });
   } catch (err) {
     console.log(err);
