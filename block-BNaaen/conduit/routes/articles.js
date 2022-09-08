@@ -174,8 +174,9 @@ router.delete("/:slug/favorite", auth.verifyToken, async (req, res, next) => {
   }
 });
 
-router.get("/", async (req, res, next) => {
+router.get("/", auth.optionalAuth, async (req, res, next) => {
   let { tag, author, favorited, limit, offset } = req.query;
+  let newArticles;
   limit = limit ? limit : 20;
   offset = offset ? offset : 0;
   try {
@@ -195,7 +196,12 @@ router.get("/", async (req, res, next) => {
       .sort({ createdAt: -1 })
       .skip(offset)
       .limit(limit);
-    const newArticles = await getArticles(articles);
+    if (req.user) {
+      const user = await User.findById(req.user.userId);
+      newArticles = await getArticles(articles, user);
+    } else {
+      newArticles = await getArticles(articles);
+    }
     res.json({ articles: newArticles });
   } catch (err) {
     console.log(err);
